@@ -95,6 +95,7 @@ struct JackRequest
     };
 
     static const int StartMarker = 'R' | ('e' << 8) | ('q' << 16) | ('S' << 24);
+    static const int EndMarker   = 'R' | ('e' << 8) | ('q' << 16) | ('E' << 24);
 
     static int ReadType(detail::JackChannelTransactionInterface* trans, RequestType& type)
     {
@@ -136,8 +137,9 @@ protected:
     const int fSize;
 public:
     DATA d;
-
 protected:
+    int fEnd = JackRequest::EndMarker;
+
     template<typename... Args>
         JackRequestMessage(Args&... args) : fType(DATA::Type()),
             fSize(sizeof(JackRequestMessage<DATA>) - sizeof(fStart) - sizeof(fType) - sizeof(fSize)),
@@ -153,7 +155,16 @@ protected:
                 return -1;
             }
 
+            /* Size also contains fEnd */
             CheckRes(trans->Read(&d, fSize));
+            if (fEnd != JackRequest::EndMarker) {
+                jack_error("Request end marker not found (exp %08x act %08x). Request of type %d will be ignored!",
+                           JackRequest::EndMarker, fEnd, fType);
+
+                /* no need to sync here. Will be done by JackRequest::ReadType() */
+                return -1;
+            }
+
             return 0;
         }
 
