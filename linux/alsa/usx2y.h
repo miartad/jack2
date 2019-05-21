@@ -22,6 +22,8 @@
 #ifndef __jack_usx2y_h__
 #define __jack_usx2y_h__
 
+#include <poll.h>
+
 #define USX2Y_MAXPACK		50
 #define USX2Y_MAXBUFFERMS	100
 #define USX2Y_MAXSTRIDE	3
