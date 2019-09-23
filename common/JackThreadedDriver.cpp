@@ -239,6 +239,18 @@ int JackThreadedDriver::Stop()
     return 0;
 }
 
+int JackThreadedDriver::Reload()
+{
+    Stop();
+
+    // not able to use Close() and Open() since we dont have original Open() parameters, these
+    // are internal to fDriver, reload should reopen with same parameters
+    fDriver->Reload();
+
+    Start();
+    return 0;
+}
+
 bool JackThreadedDriver::Execute()
 {
     return (Process() == 0);
