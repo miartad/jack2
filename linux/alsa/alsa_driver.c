@@ -2759,6 +2759,7 @@ alsa_driver_new (char *name, char **capture_alsa_devices,
 
 		device->capture_linked = 0;
 
+#ifndef __QNXNTO__
 		if (i == 0) {
 			continue;
 		}
@@ -2768,6 +2769,7 @@ alsa_driver_new (char *name, char **capture_alsa_devices,
 			continue;
 		}
 		device->capture_linked = 1;
+#endif
 	}
 
 	for (int i = 0; i < driver->devices_p_count; ++i) {
@@ -2775,6 +2777,7 @@ alsa_driver_new (char *name, char **capture_alsa_devices,
 
 		device->playback_linked = 0;
 
+#ifndef __QNXNTO__
 		snd_pcm_t *handle = driver->devices[0].capture_handle;
 		if (!handle) {
 			if (i == 0) {
@@ -2788,6 +2791,7 @@ alsa_driver_new (char *name, char **capture_alsa_devices,
 			continue;
 		}
 		device->playback_linked = 1;
+#endif
 	}
 
 	driver->client = client;
