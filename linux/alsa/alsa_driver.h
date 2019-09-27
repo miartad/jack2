@@ -96,8 +96,6 @@ typedef struct _alsa_device {
     unsigned long playback_sample_bytes;
     unsigned long capture_sample_bytes;
 
-    jack_nframes_t frame_rate;
-
     /* is this device linked to first device */
     int capture_linked;
     int playback_linked;

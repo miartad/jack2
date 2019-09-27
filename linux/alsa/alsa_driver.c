@@ -480,13 +480,13 @@ alsa_driver_configure_stream (alsa_driver_t *driver, alsa_device_t *device, char
 		}
 	}
 
-	frame_rate = device->frame_rate ;
+	frame_rate = driver->frame_rate ;
 	err = snd_pcm_hw_params_set_rate_near (handle, hw_params,
 					       &frame_rate, NULL) ;
-	device->frame_rate = frame_rate ;
+	driver->frame_rate = frame_rate ;
 	if (err < 0) {
 		jack_error ("ALSA: cannot set sample/frame rate to %"
-			    PRIu32 " for %s", device->frame_rate,
+			    PRIu32 " for %s", driver->frame_rate,
 			    stream_name);
 		return -1;
 	}
@@ -705,7 +705,7 @@ alsa_driver_set_parameters (alsa_driver_t *driver,
 	unsigned int cr = 0;
 	int err;
 
-	device->frame_rate = rate;
+	driver->frame_rate = rate;
 	driver->frames_per_cycle = frames_per_cycle;
 	driver->user_nperiods = user_nperiods;
 
@@ -773,25 +773,25 @@ alsa_driver_set_parameters (alsa_driver_t *driver,
 		 * still works properly in full-duplex with slightly
 		 * different rate values between adc and dac
 		 */
-		if (cr != device->frame_rate && pr != device->frame_rate) {
+		if (cr != driver->frame_rate && pr != driver->frame_rate) {
 			jack_error ("sample rate in use (%d Hz) does not "
 				    "match requested rate (%d Hz)",
-				    cr, device->frame_rate);
-			device->frame_rate = cr;
+				    cr, driver->frame_rate);
+			driver->frame_rate = cr;
 		}
 
 	}
-	else if (device->capture_handle && cr != device->frame_rate) {
+	else if (device->capture_handle && cr != driver->frame_rate) {
 		jack_error ("capture sample rate in use (%d Hz) does not "
 			    "match requested rate (%d Hz)",
-			    cr, device->frame_rate);
-		device->frame_rate = cr;
+			    cr, driver->frame_rate);
+		driver->frame_rate = cr;
 	}
-	else if (device->playback_handle && pr != device->frame_rate) {
+	else if (device->playback_handle && pr != driver->frame_rate) {
 		jack_error ("playback sample rate in use (%d Hz) does not "
 			    "match requested rate (%d Hz)",
-			    pr, device->frame_rate);
-		device->frame_rate = pr;
+			    pr, driver->frame_rate);
+		driver->frame_rate = pr;
 	}
 
 
@@ -958,7 +958,7 @@ alsa_driver_set_parameters (alsa_driver_t *driver,
 
 	driver->period_usecs =
 		(jack_time_t) floor ((((float) driver->frames_per_cycle) /
-				      device->frame_rate) * 1000000.0f);
+				      driver->frame_rate) * 1000000.0f);
 	driver->poll_timeout = (int) floor (1.5f * driver->period_usecs);
 
 // JACK2
@@ -2345,10 +2345,6 @@ alsa_driver_new (char *name, char **capture_alsa_devices,
 			jack_error ("ALSA: failed to set parameters");
 			alsa_driver_delete (driver);
 			return NULL;
-		}
-
-		if (i == 0) {
-			driver->frame_rate = device->frame_rate;
 		}
 	}
 
