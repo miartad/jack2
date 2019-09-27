@@ -291,63 +291,6 @@ fail:
 }
 #endif
 
-struct array_string_t
-{
-    uint64_t size;
-    char **data;
-};
-
-void array_string_free(struct array_string_t *obj)
-{
-    if (obj == NULL) {
-        return;
-    }
-    if (obj->data == NULL) {
-        return;
-    }
-    for (size_t i = 0; i < obj->size; ++i) {
-        free(obj->data[i]);
-    }
-    free(obj->data);
-    obj->data = NULL;
-    obj->size = 0;
-}
-
-struct array_string_t array_string_split(const char *str, const char sep)
-{
-    struct array_string_t result;
-    result.size = 0;
-
-    std::stringstream stream;
-    stream << std::string(str);
-    if (stream.str().find(sep) == std::string::npos) {
-        result.data = (char**) calloc(1, sizeof(char*));
-        result.data[0] = (char*) calloc(JACK_CLIENT_NAME_SIZE + 1, sizeof(char));
-        result.size = 1;
-        strncpy(result.data[0], str, JACK_CLIENT_NAME_SIZE);
-        result.data[0][JACK_CLIENT_NAME_SIZE] = '\0';
-        return result;
-    }
-
-    std::string driver;
-    std::vector<char*> drivers;
-    while (std::getline(stream, driver, sep)) {
-        driver.erase(std::remove_if(driver.begin(), driver.end(), isspace), driver.end());
-        if (std::find(drivers.begin(), drivers.end(), driver) != drivers.end())
-            continue;
-        char *str = (char*) calloc(JACK_CLIENT_NAME_SIZE + 1, sizeof(char));
-        strncpy(str, driver.c_str(), JACK_CLIENT_NAME_SIZE);
-        str[JACK_CLIENT_NAME_SIZE] = '\0';
-        drivers.push_back(str);
-    }
-
-    result.data = (char**) calloc(driver.size(), sizeof(char*));
-    result.size = drivers.size();
-    memcpy(result.data, drivers.data(), result.size * sizeof(char*));
-
-    return result;
-}
-
 int JackAlsaDriver::Open(jack_nframes_t nframes,
                          jack_nframes_t user_nperiods,
                          jack_nframes_t samplerate,
@@ -895,6 +838,63 @@ SERVER_EXPORT const jack_driver_desc_t* driver_get_descriptor ()
         NULL);
 
     return desc;
+}
+
+struct array_string_t
+{
+    uint64_t size;
+    char **data;
+};
+
+void array_string_free(struct array_string_t *obj)
+{
+    if (obj == NULL) {
+        return;
+    }
+    if (obj->data == NULL) {
+        return;
+    }
+    for (size_t i = 0; i < obj->size; ++i) {
+        free(obj->data[i]);
+    }
+    free(obj->data);
+    obj->data = NULL;
+    obj->size = 0;
+}
+
+struct array_string_t array_string_split(const char *str, const char sep)
+{
+    struct array_string_t result;
+    result.size = 0;
+
+    std::stringstream stream;
+    stream << std::string(str);
+    if (stream.str().find(sep) == std::string::npos) {
+        result.data = (char**) calloc(1, sizeof(char*));
+        result.data[0] = (char*) calloc(JACK_CLIENT_NAME_SIZE + 1, sizeof(char));
+        result.size = 1;
+        strncpy(result.data[0], str, JACK_CLIENT_NAME_SIZE);
+        result.data[0][JACK_CLIENT_NAME_SIZE] = '\0';
+        return result;
+    }
+
+    std::string driver;
+    std::vector<char*> drivers;
+    while (std::getline(stream, driver, sep)) {
+        driver.erase(std::remove_if(driver.begin(), driver.end(), isspace), driver.end());
+        if (std::find(drivers.begin(), drivers.end(), driver) != drivers.end())
+            continue;
+        char *str = (char*) calloc(JACK_CLIENT_NAME_SIZE + 1, sizeof(char));
+        strncpy(str, driver.c_str(), JACK_CLIENT_NAME_SIZE);
+        str[JACK_CLIENT_NAME_SIZE] = '\0';
+        drivers.push_back(str);
+    }
+
+    result.data = (char**) calloc(driver.size(), sizeof(char*));
+    result.size = drivers.size();
+    memcpy(result.data, drivers.data(), result.size * sizeof(char*));
+
+    return result;
 }
 
 static Jack::JackAlsaDriver* g_alsa_driver;
