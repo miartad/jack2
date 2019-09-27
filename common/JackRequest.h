@@ -91,6 +91,7 @@ struct JackRequest
         kClientHasSessionCallback = 38,
         kComputeTotalLatencies = 39,
         kPropertyChangeNotify = 40,
+        kClientReloadMaster = 41,
     };
 
     static const int StartMarker = 'R' | ('e' << 8) | ('q' << 16) | ('S' << 24);
@@ -1413,6 +1414,25 @@ struct JackClientNotification
     int Size() { return sizeof(int) + sizeof(fName) + 5 * sizeof(int) + sizeof(fMessage); }
 
 };
+
+/*!
+\brief Restart Master Backend Request.
+*/
+
+PRE_PACKED_STRUCTURE
+struct JackClientReloadMasterRequestData
+{
+    JackClientReloadMasterRequestData()
+    {
+    }
+
+    static JackRequest::RequestType Type()
+    {
+        return JackRequest::RequestType::kClientReloadMaster;
+    }
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
+
+typedef JackRequestTemplate<JackClientReloadMasterRequestData> JackClientReloadMasterRequest;
 
 } // end of namespace
 
