@@ -1143,10 +1143,8 @@ alsa_driver_set_parameters (alsa_driver_t *driver,
 #endif
 	if (device->playback_nchannels > device->capture_nchannels) {
 		device->max_nchannels = device->playback_nchannels;
-		device->user_nchannels = device->capture_nchannels;
 	} else {
 		device->max_nchannels = device->capture_nchannels;
-		device->user_nchannels = device->playback_nchannels;
 	}
 
 	/* device local channel offset to offsets in driver, used by Jack2 */

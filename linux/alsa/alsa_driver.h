@@ -106,7 +106,6 @@ typedef struct _alsa_device {
     channel_t playback_nchannels;
     channel_t capture_nchannels;
     channel_t max_nchannels;
-    channel_t user_nchannels;
 
     bitset_t channels_not_done;
     bitset_t channels_done;
