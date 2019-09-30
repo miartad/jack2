@@ -329,23 +329,24 @@ int JackAlsaDriver::Open(alsa_driver_info_t info)
     }
 
     fDriver = alsa_driver_new ((char*)"alsa_pcm", info, NULL);
-
-    if (fDriver) {
-        /* we need to initialize variables for all devices, mainly channels count since this is required by Jack to setup ports */
-        UpdateDriverTargetState(1);
-        if (alsa_driver_open((alsa_driver_t *)fDriver) < 0) {
-            Close();
-            return -1;
-        }
-        // ALSA driver may have changed the in/out values
-        fCaptureChannels = ((alsa_driver_t *)fDriver)->capture_nchannels;
-        fPlaybackChannels = ((alsa_driver_t *)fDriver)->playback_nchannels;
-
-        return 0;
-    } else {
+    if (!fDriver) {
         Close();
         return -1;
     }
+
+    /* we need to initialize variables for all devices, mainly channels count since this is required by Jack to setup ports */
+    UpdateDriverTargetState(1);
+
+    if (alsa_driver_open((alsa_driver_t *)fDriver) < 0) {
+        Close();
+        return -1;
+    }
+
+    // ALSA driver may have changed the in/out values
+    fCaptureChannels = ((alsa_driver_t *)fDriver)->capture_nchannels;
+    fPlaybackChannels = ((alsa_driver_t *)fDriver)->playback_nchannels;
+
+    return 0;
 }
 
 int JackAlsaDriver::Close()
