@@ -58,6 +58,7 @@ class JackAlsaDriver : public JackAudioDriver
 
         int Start();
         int Stop();
+        int Reload();
 
         int Read();
         int Write();
@@ -75,6 +76,10 @@ class JackAlsaDriver : public JackAudioDriver
         void ClearOutputAux();
         void WriteOutputAux(alsa_device_t *device, jack_nframes_t orig_nframes, snd_pcm_sframes_t contiguous, snd_pcm_sframes_t nwritten);
         void SetTimetAux(jack_time_t time);
+
+        int UpdateDriverTargetState(int init = 0);
+
+        int TargetState(int init, int connections_count);
 
         // JACK API emulation for the midi driver
         int is_realtime() const;
