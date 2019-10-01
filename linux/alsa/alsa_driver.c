@@ -1438,6 +1438,87 @@ alsa_driver_open (alsa_driver_t *driver)
 		}
 	}
 
+	if (driver->features & ALSA_DRIVER_FEAT_UNLINKED_DEVS) {
+		jack_info ("alsa driver linking disabled");
+		return 0;
+	} else {
+		jack_info ("alsa driver linking enabled");
+	}
+
+	snd_pcm_t *group_handle = NULL;
+
+	for (int i = 0; i < driver->devices_c_count; ++i) {
+		alsa_device_t *device = &driver->devices[i];
+
+		if (!device->capture_handle) {
+			continue;
+		}
+
+		if (device->capture_target_state != SND_PCM_STATE_RUNNING) {
+			continue;
+		}
+
+		if (group_handle == NULL) {
+			group_handle = device->capture_handle;
+			device->capture_linked = 1;
+			jack_info ("link C: %s", device->capture_name);
+			continue;
+		}
+
+		if (device->capture_linked) {
+			continue;
+		}
+
+		if (group_handle == device->capture_handle) {
+			device->capture_linked = 1;
+			continue;
+		}
+
+		if (snd_pcm_link (group_handle, device->capture_handle) != 0) {
+			jack_error ("failed to add device to link group C: '%s'", device->capture_name);
+			continue;
+		}
+		device->capture_linked = 1;
+
+		jack_info ("link C: %s", device->capture_name);
+	}
+
+	for (int i = 0; i < driver->devices_p_count; ++i) {
+		alsa_device_t *device = &driver->devices[i];
+
+		if (!device->playback_handle) {
+			continue;
+		}
+
+		if (device->playback_target_state != SND_PCM_STATE_RUNNING) {
+			continue;
+		}
+
+		if (group_handle == NULL) {
+			group_handle = device->playback_handle;
+			device->playback_linked = 1;
+			jack_info ("link P: %s", device->playback_name);
+			continue;
+		}
+
+		if (device->playback_linked) {
+			continue;
+		}
+
+		if (group_handle == device->playback_handle) {
+			device->playback_linked = 1;
+			continue;
+		}
+
+		if (snd_pcm_link (group_handle, device->playback_handle) != 0) {
+			jack_error ("failed to add device to link group P: '%s'", device->playback_name);
+			continue;
+		}
+		device->playback_linked = 1;
+
+		jack_info ("link P: %s", device->playback_name);
+	}
+
 	return 0;
 }
 
@@ -1469,6 +1550,13 @@ alsa_driver_start (alsa_driver_t *driver)
 		}
 
 		driver->capture_nfds += snd_pcm_poll_descriptors_count (device->capture_handle);
+
+		if (group_done && device->capture_linked) {
+			continue;
+		}
+
+		if (device->capture_linked) {
+			group_done = 1;
 		}
 
 		if ((err = alsa_driver_prepare (device->capture_handle, SND_PCM_STREAM_CAPTURE)) < 0) {
@@ -1491,6 +1579,14 @@ alsa_driver_start (alsa_driver_t *driver)
 		}
 
 		driver->playback_nfds += snd_pcm_poll_descriptors_count (device->playback_handle);
+
+		if (group_done && device->playback_linked) {
+			continue;
+		}
+
+		if (device->playback_linked) {
+			group_done = 1;
+		}
 
 		if ((err = alsa_driver_prepare (device->playback_handle, SND_PCM_STREAM_PLAYBACK)) < 0) {
 			jack_error ("ALSA: failed to prepare device '%s' (%s)", device->playback_name, snd_strerror(err));
@@ -1586,6 +1682,8 @@ alsa_driver_start (alsa_driver_t *driver)
 		jack_info ("silence P: %s", device->playback_name);
 	}
 
+	group_done = 0;
+
 	for (int i = 0; i < driver->devices_c_count; ++i) {
 		alsa_device_t *device = &driver->devices[i];
 
@@ -1595,6 +1693,14 @@ alsa_driver_start (alsa_driver_t *driver)
 
 		if (device->capture_target_state != SND_PCM_STATE_RUNNING) {
 			continue;
+		}
+
+		if (group_done && device->capture_linked) {
+			continue;
+		}
+
+		if (device->capture_linked) {
+			group_done = 1;
 		}
 
 		if ((err = alsa_driver_stream_start (device->capture_handle, SND_PCM_STREAM_CAPTURE)) < 0) {
@@ -1615,6 +1721,14 @@ alsa_driver_start (alsa_driver_t *driver)
 
 		if (device->playback_target_state != SND_PCM_STATE_RUNNING) {
 			continue;
+		}
+
+		if (group_done && device->playback_linked) {
+			continue;
+		}
+
+		if (device->playback_linked) {
+			group_done = 1;
 		}
 
 		if ((err = alsa_driver_stream_start (device->playback_handle, SND_PCM_STREAM_PLAYBACK)) < 0) {
@@ -1658,6 +1772,7 @@ alsa_driver_stop (alsa_driver_t *driver)
 // JACK2
     ClearOutput();
 
+	int group_done = 0;
 
 	for (int i = 0; i < driver->devices_c_count; ++i) {
 		alsa_device_t *device = &driver->devices[i];
@@ -1665,6 +1780,14 @@ alsa_driver_stop (alsa_driver_t *driver)
 		jack_info("flush C: %s", device->capture_name);
 		if (!device->capture_handle) {
 			continue;
+		}
+
+		if (group_done && device->capture_linked) {
+			continue;
+		}
+
+		if (device->capture_linked) {
+			group_done = 1;
 		}
 
 #ifdef __QNXNTO__
@@ -1686,6 +1809,14 @@ alsa_driver_stop (alsa_driver_t *driver)
 		jack_info("flush P: %s", device->playback_name);
 		if (!device->playback_handle) {
 			continue;
+		}
+
+		if (group_done && device->playback_linked) {
+			continue;
+		}
+
+		if (device->playback_linked) {
+			group_done = 1;
 		}
 
 #ifdef __QNXNTO__
@@ -1723,6 +1854,12 @@ alsa_driver_close (alsa_driver_t *driver)
 			continue;
 		}
 
+		if (device->capture_linked) {
+			snd_pcm_unlink(device->capture_handle);
+			device->capture_linked = 0;
+			jack_info("unlink C: %s", device->capture_name);
+		}
+
 		snd_pcm_close(device->capture_handle);
 		device->capture_handle = NULL;
 
@@ -1735,6 +1872,12 @@ alsa_driver_close (alsa_driver_t *driver)
 		jack_info ("close P: %s", device->playback_name);
 		if (!device->playback_handle) {
 			continue;
+		}
+
+		if (device->playback_linked) {
+			snd_pcm_unlink(device->playback_handle);
+			device->playback_linked = 0;
+			jack_info("unlink P: %s", device->playback_name);
 		}
 
 		snd_pcm_close(device->playback_handle);
