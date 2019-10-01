@@ -41,6 +41,10 @@
 #include "memops.h"
 #include "alsa_midi.h"
 
+#define SND_PCM_STATE_NOTREADY     (SND_PCM_STATE_LAST + 1)
+
+#define ALSA_DRIVER_FEAT_CLOSE_IDLE_DEVS   (1 << 1)
+
 #ifdef __cplusplus
 extern "C"
 {
