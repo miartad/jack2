@@ -922,9 +922,10 @@ alsa_driver_set_parameters (alsa_driver_t *driver,
 		}
 	}
 
+	alsa_driver_setup_io_function_pointers (driver, device);
+
 	/* do only on first start */
 	if (device->max_nchannels == 0) {
-		alsa_driver_setup_io_function_pointers (driver, device);
 
 		/* Allocate and initialize structures that rely on the
 		   channels counts.
@@ -948,7 +949,7 @@ alsa_driver_set_parameters (alsa_driver_t *driver,
 		bitset_create (&device->channels_done, device->max_nchannels);
 		bitset_create (&device->channels_not_done, device->max_nchannels);
 
-		if (device->playback_handle) {
+		if (device->playback_name) {
 			device->playback_addr = (char **)
 				malloc (sizeof (char *) * device->playback_nchannels);
 			memset (device->playback_addr, 0,
@@ -972,7 +973,7 @@ alsa_driver_set_parameters (alsa_driver_t *driver,
 			driver->dither_state = (dither_state_t *) calloc (device->playback_nchannels, sizeof (dither_state_t));
 		}
 
-		if (device->capture_handle) {
+		if (device->capture_name) {
 			device->capture_addr = (char **)
 				malloc (sizeof (char *) * device->capture_nchannels);
 			memset (device->capture_addr, 0,
@@ -1122,7 +1123,7 @@ alsa_driver_open (alsa_driver_t *driver)
 		alsa_device_t *device = &driver->devices[i];
 		int do_capture = 0, do_playback = 0;
 
-		if (!device->capture_handle && (i <driver->devices_c_count) && (device->capture_target_state != SND_PCM_STATE_NOTREADY)) {
+		if (!device->capture_handle && (i < driver->devices_c_count) && (device->capture_target_state != SND_PCM_STATE_NOTREADY)) {
 			err = alsa_driver_open_device (driver, &driver->devices[i], SND_PCM_STREAM_CAPTURE);
 			if (err < 0) {
 				jack_error ("\n\nATTENTION: Opening of the capture device \"%s\" failed.",
@@ -1135,7 +1136,7 @@ alsa_driver_open (alsa_driver_t *driver)
 			jack_info ("open C: %s", device->capture_name);
 		}
 
-		if (!device->playback_handle && (i <driver->devices_p_count) && (device->playback_target_state != SND_PCM_STATE_NOTREADY)) {
+		if (!device->playback_handle && (i < driver->devices_p_count) && (device->playback_target_state != SND_PCM_STATE_NOTREADY)) {
 			err = alsa_driver_open_device (driver, &driver->devices[i], SND_PCM_STREAM_PLAYBACK);
 			if (err < 0) {
 				jack_error ("\n\nATTENTION: Opening of the playback device \"%s\" failed.",
