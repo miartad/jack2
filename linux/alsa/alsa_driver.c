@@ -1416,8 +1416,6 @@ alsa_driver_open (alsa_driver_t *driver)
 			}
 
 			do_capture = 1;
-
-			jack_info ("open C: %s", device->capture_name);
 		}
 
 		if (!device->playback_handle && (i < driver->devices_p_count) && (device->playback_target_state != SND_PCM_STATE_NOTREADY)) {
@@ -1429,8 +1427,6 @@ alsa_driver_open (alsa_driver_t *driver)
 			}
 
 			do_playback = 1;
-
-			jack_info ("open P: %s", device->playback_name);
 		}
 
 		if (alsa_driver_set_parameters (driver, device, do_capture, do_playback, driver->frames_per_cycle, driver->user_nperiods, driver->frame_rate)) {
@@ -1462,7 +1458,6 @@ alsa_driver_open (alsa_driver_t *driver)
 		if (group_handle == NULL) {
 			group_handle = device->capture_handle;
 			device->capture_linked = 1;
-			jack_info ("link C: %s", device->capture_name);
 			continue;
 		}
 
@@ -1480,8 +1475,6 @@ alsa_driver_open (alsa_driver_t *driver)
 			continue;
 		}
 		device->capture_linked = 1;
-
-		jack_info ("link C: %s", device->capture_name);
 	}
 
 	for (int i = 0; i < driver->devices_p_count; ++i) {
@@ -1498,7 +1491,6 @@ alsa_driver_open (alsa_driver_t *driver)
 		if (group_handle == NULL) {
 			group_handle = device->playback_handle;
 			device->playback_linked = 1;
-			jack_info ("link P: %s", device->playback_name);
 			continue;
 		}
 
@@ -1516,8 +1508,6 @@ alsa_driver_open (alsa_driver_t *driver)
 			continue;
 		}
 		device->playback_linked = 1;
-
-		jack_info ("link P: %s", device->playback_name);
 	}
 
 	return 0;
@@ -1564,8 +1554,6 @@ alsa_driver_start (alsa_driver_t *driver)
 			jack_error ("ALSA: failed to prepare device '%s' (%s)", device->capture_name, snd_strerror(err));
 			return -1;
 		}
-
-		jack_info("prepare C: %s", device->capture_name);
 	}
 
 	for (int i = 0; i < driver->devices_p_count; ++i) {
@@ -1593,8 +1581,6 @@ alsa_driver_start (alsa_driver_t *driver)
 			jack_error ("ALSA: failed to prepare device '%s' (%s)", device->playback_name, snd_strerror(err));
 			return -1;
 		}
-
-		jack_info("prepare P: %s", device->playback_name);
 	}
 
 	// TODO amiartus
@@ -1679,8 +1665,6 @@ alsa_driver_start (alsa_driver_t *driver)
 #else
 		snd_pcm_mmap_commit (device->playback_handle, poffset, silence_frames);
 #endif
-
-		jack_info ("silence P: %s", device->playback_name);
 	}
 
 	group_done = 0;
@@ -1709,8 +1693,6 @@ alsa_driver_start (alsa_driver_t *driver)
 					snd_strerror(err));
 			return -1;
 		}
-
-		jack_info("start C: %s", device->capture_name);
 	}
 
 	for (int i = 0; i < driver->devices_p_count; ++i) {
@@ -1737,8 +1719,6 @@ alsa_driver_start (alsa_driver_t *driver)
 					snd_strerror(err));
 			return -1;
 		}
-
-		jack_info("start P: %s", device->playback_name);
 	}
 
 	return 0;
@@ -1777,8 +1757,6 @@ alsa_driver_stop (alsa_driver_t *driver)
 
 	for (int i = 0; i < driver->devices_c_count; ++i) {
 		alsa_device_t *device = &driver->devices[i];
-
-		jack_info("flush C: %s", device->capture_name);
 		if (!device->capture_handle) {
 			continue;
 		}
@@ -1800,14 +1778,10 @@ alsa_driver_stop (alsa_driver_t *driver)
 			jack_error ("ALSA: failed to flush device (%s)", snd_strerror (err));
 			return -1;
 		}
-
-		jack_info("flush C: %s done", device->capture_name);
 	}
 
 	for (int i = 0; i < driver->devices_p_count; ++i) {
 		alsa_device_t *device = &driver->devices[i];
-
-		jack_info("flush P: %s", device->playback_name);
 		if (!device->playback_handle) {
 			continue;
 		}
@@ -1829,8 +1803,6 @@ alsa_driver_stop (alsa_driver_t *driver)
 			jack_error ("ALSA: failed to flush device (%s)", snd_strerror (err));
 			return -1;
 		}
-
-		jack_info("flush P: %s done", device->playback_name);
 	}
 
 // TODO: amiartus
@@ -1849,8 +1821,6 @@ alsa_driver_close (alsa_driver_t *driver)
 {
 	for (int i = 0; i < driver->devices_c_count; ++i) {
 		alsa_device_t *device = &driver->devices[i];
-
-		jack_info ("close C: %s", device->capture_name);
 		if (!device->capture_handle) {
 			continue;
 		}
@@ -1858,19 +1828,14 @@ alsa_driver_close (alsa_driver_t *driver)
 		if (device->capture_linked) {
 			snd_pcm_unlink(device->capture_handle);
 			device->capture_linked = 0;
-			jack_info("unlink C: %s", device->capture_name);
 		}
 
 		snd_pcm_close(device->capture_handle);
 		device->capture_handle = NULL;
-
-		jack_info ("close C: %s", device->capture_name);
 	}
 
 	for (int i = 0; i < driver->devices_p_count; ++i) {
 		alsa_device_t *device = &driver->devices[i];
-
-		jack_info ("close P: %s", device->playback_name);
 		if (!device->playback_handle) {
 			continue;
 		}
@@ -1878,13 +1843,10 @@ alsa_driver_close (alsa_driver_t *driver)
 		if (device->playback_linked) {
 			snd_pcm_unlink(device->playback_handle);
 			device->playback_linked = 0;
-			jack_info("unlink P: %s", device->playback_name);
 		}
 
 		snd_pcm_close(device->playback_handle);
 		device->playback_handle = NULL;
-
-		jack_info ("close P: %s", device->playback_name);
 	}
 
 	return 0;
@@ -2101,8 +2063,6 @@ alsa_driver_wait (alsa_driver_t *driver, int extra_fd, int *status, float
 
 		*status = 0;
 
-		jack_info ("wait ignored");
-
 		return INT_MAX;
 	}
 
@@ -2123,7 +2083,6 @@ alsa_driver_wait (alsa_driver_t *driver, int extra_fd, int *status, float
 			}
 
 			if (device->capture_target_state != SND_PCM_STATE_RUNNING) {
-				jack_info ("poll queue C: %s ignored", device->capture_name);
 				continue;
 			}
 
@@ -2133,8 +2092,6 @@ alsa_driver_wait (alsa_driver_t *driver, int extra_fd, int *status, float
 				SND_PCM_STREAM_CAPTURE);
 
 			pfd_index += pfd_cap_count[i];
-
-			jack_info ("poll queue C: %s", device->capture_name);
 		}
 
 		/* collect playback poll descriptors */
@@ -2150,7 +2107,6 @@ alsa_driver_wait (alsa_driver_t *driver, int extra_fd, int *status, float
 			}
 
 			if (device->playback_target_state != SND_PCM_STATE_RUNNING) {
-				jack_info ("poll queue P: %s ignored", device->playback_name);
 				continue;
 			}
 
@@ -2160,8 +2116,6 @@ alsa_driver_wait (alsa_driver_t *driver, int extra_fd, int *status, float
 				SND_PCM_STREAM_PLAYBACK);
 
 			pfd_index += pfd_play_count[i];
-
-			jack_info ("poll queue P: %s", device->playback_name);
 		}
 
 		if (extra_fd >= 0) {
@@ -2273,7 +2227,6 @@ alsa_driver_wait (alsa_driver_t *driver, int extra_fd, int *status, float
 			}
 
 			if (device->capture_target_state != SND_PCM_STATE_RUNNING) {
-				jack_info ("ready C: '%s' ignored", device->capture_name);
 				continue;
 			}
 
@@ -2294,7 +2247,6 @@ alsa_driver_wait (alsa_driver_t *driver, int extra_fd, int *status, float
 					return 0;
 				}
 				if (collect_revs & POLLIN) {
-					jack_info ("ready C: '%s'", device->capture_name);
 				}
 				/* on next poll round skip fds from this device */
 				cap_revents[i] = collect_revs;
@@ -2314,7 +2266,6 @@ alsa_driver_wait (alsa_driver_t *driver, int extra_fd, int *status, float
 			}
 
 			if (device->playback_target_state != SND_PCM_STATE_RUNNING) {
-				jack_info ("ready P: '%s' ignored", device->playback_name);
 				continue;
 			}
 
@@ -2340,7 +2291,6 @@ alsa_driver_wait (alsa_driver_t *driver, int extra_fd, int *status, float
 					return 0;
 				}
 				if (collect_revs & POLLOUT) {
-					jack_info ("ready P: '%s'", device->playback_name);
 				}
 				/* on next poll round skip fds from this device */
 				play_revents[i] = collect_revs;
@@ -2350,7 +2300,6 @@ alsa_driver_wait (alsa_driver_t *driver, int extra_fd, int *status, float
 
 		/* all fds were polled and returned events, nothing more to do */
 		if (pfd_count == 0) {
-			jack_info("ALSA: all fds polled");
 			break;
 		}
 	}
@@ -2370,7 +2319,6 @@ alsa_driver_wait (alsa_driver_t *driver, int extra_fd, int *status, float
 		}
 
 		if (device->capture_target_state != SND_PCM_STATE_RUNNING) {
-			jack_log("avail frames C: %s %ld ignored", device->capture_name, avail);
 			continue;
 		}
 
@@ -2385,8 +2333,6 @@ alsa_driver_wait (alsa_driver_t *driver, int extra_fd, int *status, float
 			}
 		}
 		capture_avail = capture_avail < avail ? capture_avail : avail;
-
-		jack_log("avail frames C: %s %ld", device->capture_name, avail);
 	}
 
 	playback_avail = INT_MAX;
@@ -2399,7 +2345,6 @@ alsa_driver_wait (alsa_driver_t *driver, int extra_fd, int *status, float
 		}
 
 		if (device->playback_target_state != SND_PCM_STATE_RUNNING) {
-			jack_log("avail frames P: %s %ld", device->playback_name, avail);
 			continue;
 		}
 
@@ -2414,8 +2359,6 @@ alsa_driver_wait (alsa_driver_t *driver, int extra_fd, int *status, float
 			}
 		}
 		playback_avail = playback_avail < avail ? playback_avail : avail;
-
-		jack_log("avail frames P: %s %ld", device->playback_name, avail);
 	}
 
 	/* mark all channels not done for now. read/write will change this */
@@ -2466,12 +2409,10 @@ alsa_driver_read (alsa_driver_t *driver, jack_nframes_t nframes)
 		alsa_device_t *device = &driver->devices[i];
 
 		if (!device->capture_handle) {
-			jack_info ("read C: %s ignored", device->capture_name);
 			continue;
 		}
 
 		if (device->capture_target_state != SND_PCM_STATE_RUNNING) {
-			jack_info ("read C: %s ignored", device->capture_name);
 			continue;
 		}
 
@@ -2531,7 +2472,6 @@ alsa_driver_read (alsa_driver_t *driver, jack_nframes_t nframes)
 
 			frames_remain -= contiguous;
 			nread += contiguous;
-			jack_info ("read C: %s", device->capture_name);
 		}
 	}
 
@@ -2556,12 +2496,10 @@ alsa_driver_write (alsa_driver_t* driver, jack_nframes_t nframes)
 		alsa_device_t *device = &driver->devices[i];
 
 		if (!device->playback_handle) {
-			jack_info ("write P: %s ignored", device->playback_name);
 			continue;
 		}
 
 		if (device->playback_target_state != SND_PCM_STATE_RUNNING) {
-			jack_info ("write P: %s ignored", device->playback_name);
 			continue;
 		}
 
@@ -2652,8 +2590,6 @@ alsa_driver_write (alsa_driver_t* driver, jack_nframes_t nframes)
 
 			frames_remain -= contiguous;
 			nwritten += contiguous;
-
-			jack_info ("write P: %s", device->playback_name);
 		}
 	}
 
