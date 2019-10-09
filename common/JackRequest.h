@@ -106,7 +106,7 @@ struct JackRequest
             union {
                 int i;
                 uint8_t b[sizeof(i)];
-            } POST_PACKED_STRUCTURE start;
+            } POST_PACKED_STRUCTURE_FORCED_AARCH64 start;
 
             CheckRes(trans->Read(&start.i, sizeof(StartMarker)));
             if (start.i != StartMarker) {
@@ -173,7 +173,7 @@ protected:
             CheckRes(trans->Write(this, sizeof(JackRequestMessage<DATA>)));
             return 0;
         }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 
 template<class DATA>
@@ -252,7 +252,7 @@ struct JackClientCheckRequestData
     {
         return JackRequest::RequestType::kClientCheck;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackClientCheckRequestData> JackClientCheckRequest;
 
@@ -319,7 +319,7 @@ struct JackClientOpenRequestData
     {
         return JackRequest::RequestType::kClientOpen;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackClientOpenRequestData> JackClientOpenRequest;
 
@@ -378,7 +378,7 @@ struct JackClientCloseRequestData
     {
         return JackRequest::RequestType::kClientClose;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackClientCloseRequestData> JackClientCloseRequest;
 
@@ -401,7 +401,7 @@ struct JackActivateRequestData
     {
         return JackRequest::RequestType::kActivateClient;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackActivateRequestData> JackActivateRequest;
 
@@ -422,7 +422,7 @@ struct JackDeactivateRequestData
     {
         return JackRequest::RequestType::kDeactivateClient;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackDeactivateRequestData> JackDeactivateRequest;
 
@@ -454,7 +454,7 @@ struct JackPortRegisterRequestData
     {
         return JackRequest::RequestType::kRegisterPort;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackPortRegisterRequestData> JackPortRegisterRequest;
 
@@ -503,7 +503,7 @@ struct JackPortUnRegisterRequestData
     {
         return JackRequest::RequestType::kUnRegisterPort;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackPortUnRegisterRequestData> JackPortUnRegisterRequest;
 
@@ -532,7 +532,7 @@ struct JackPortConnectNameRequestData
     {
         return JackRequest::RequestType::kConnectNamePorts;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackPortConnectNameRequestData> JackPortConnectNameRequest;
 
@@ -561,7 +561,7 @@ struct JackPortDisconnectNameRequestData
     {
         return JackRequest::RequestType::kDisconnectNamePorts;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackPortDisconnectNameRequestData> JackPortDisconnectNameRequest;
 
@@ -585,7 +585,7 @@ struct JackPortConnectRequestData
     {
         return JackRequest::RequestType::kConnectPorts;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackPortConnectRequestData> JackPortConnectRequest;
 
@@ -609,7 +609,7 @@ struct JackPortDisconnectRequestData
     {
         return JackRequest::RequestType::kDisconnectPorts;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackPortDisconnectRequestData> JackPortDisconnectRequest;
 
@@ -636,7 +636,7 @@ struct JackPortRenameRequestData
     {
         return JackRequest::RequestType::kPortRename;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackPortRenameRequestData> JackPortRenameRequest;
 
@@ -658,7 +658,7 @@ struct JackSetBufferSizeRequestData
     {
         return JackRequest::RequestType::kSetBufferSize;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackSetBufferSizeRequestData> JackSetBufferSizeRequest;
 
@@ -680,7 +680,7 @@ struct JackSetFreeWheelRequestData
     {
         return JackRequest::RequestType::kSetFreeWheel;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackSetFreeWheelRequestData> JackSetFreeWheelRequest;
 
@@ -695,7 +695,7 @@ struct JackComputeTotalLatenciesRequestData
     {
         return JackRequest::RequestType::kComputeTotalLatencies;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackComputeTotalLatenciesRequestData> JackComputeTotalLatenciesRequest;
 
@@ -717,7 +717,7 @@ struct JackReleaseTimebaseRequestData
     {
         return JackRequest::RequestType::kReleaseTimebase;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackReleaseTimebaseRequestData> JackReleaseTimebaseRequest;
 
@@ -740,7 +740,7 @@ struct JackSetTimebaseCallbackRequestData
     {
         return JackRequest::RequestType::kSetTimebaseCallback;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackSetTimebaseCallbackRequestData> JackSetTimebaseCallbackRequest;
 
@@ -763,7 +763,7 @@ struct JackGetInternalClientNameRequestData
     {
         return JackRequest::RequestType::kGetInternalClientName;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackGetInternalClientNameRequestData> JackGetInternalClientNameRequest;
 
@@ -826,7 +826,7 @@ struct JackInternalClientHandleRequestData
     {
         return JackRequest::RequestType::kInternalClientHandle;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackInternalClientHandleRequestData> JackInternalClientHandleRequest;
 
@@ -903,7 +903,7 @@ struct JackInternalClientLoadRequestData
     {
         return JackRequest::RequestType::kInternalClientLoad;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackInternalClientLoadRequestData> JackInternalClientLoadRequest;
 
@@ -961,7 +961,7 @@ struct JackInternalClientUnloadRequestData
     {
         return JackRequest::RequestType::kInternalClientUnload;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackInternalClientUnloadRequestData> JackInternalClientUnloadRequest;
 
@@ -1018,7 +1018,7 @@ struct JackClientNotificationRequestData
     {
         return JackRequest::RequestType::kNotification;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackClientNotificationRequestData> JackClientNotificationRequest;
 
@@ -1163,7 +1163,7 @@ struct JackSessionNotifyRequestData
     {
         return JackRequest::RequestType::kSessionNotify;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackSessionNotifyRequestData> JackSessionNotifyRequest;
 
@@ -1180,7 +1180,7 @@ struct JackSessionReplyRequestData
     {
         return JackRequest::RequestType::kSessionReply;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackSessionReplyRequestData> JackSessionReplyRequest;
 
@@ -1261,7 +1261,7 @@ struct JackGetUUIDRequestData
     {
         return JackRequest::RequestType::kGetUUIDByClient;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackGetUUIDRequestData> JackGetUUIDRequest;
 
@@ -1280,7 +1280,7 @@ struct JackGetClientNameRequestData
     {
         return JackRequest::RequestType::kGetClientByUUID;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackGetClientNameRequestData> JackGetClientNameRequest;
 
@@ -1305,7 +1305,7 @@ struct JackReserveNameRequestData
     {
         return JackRequest::RequestType::kReserveClientName;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackReserveNameRequestData> JackReserveNameRequest;
 
@@ -1324,7 +1324,7 @@ struct JackClientHasSessionCallbackRequestData
     {
         return JackRequest::RequestType::kClientHasSessionCallback;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackClientHasSessionCallbackRequestData> JackClientHasSessionCallbackRequest;
 
@@ -1349,7 +1349,7 @@ struct JackPropertyChangeNotifyRequestData
     {
         return JackRequest::RequestType::kPropertyChangeNotify;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackPropertyChangeNotifyRequestData> JackPropertyChangeNotifyRequest;
 
@@ -1430,7 +1430,7 @@ struct JackClientReloadMasterRequestData
     {
         return JackRequest::RequestType::kClientReloadMaster;
     }
-} POST_PACKED_STRUCTURE;
+} POST_PACKED_STRUCTURE_FORCED_AARCH64;
 
 typedef JackRequestTemplate<JackClientReloadMasterRequestData> JackClientReloadMasterRequest;
 
