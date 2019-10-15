@@ -60,6 +60,7 @@ char* strcasestr(const char* haystack, const char* needle);
 #define MAX_RETRY_COUNT 5
 
 static int alsa_driver_open_device (alsa_driver_t *driver, alsa_device_t *device, bool is_capture);
+static int alsa_driver_get_state (snd_pcm_t *handle, int is_capture);
 
 void
 jack_driver_init (jack_driver_t *driver)
@@ -1570,17 +1571,7 @@ alsa_driver_restart (alsa_driver_t *driver)
 static int
 alsa_driver_get_state (snd_pcm_t *handle, int is_capture)
 {
-	int res;
-
-	snd_pcm_status_t *status;
-	snd_pcm_status_alloca(&status);
-
-	res = snd_pcm_status(handle, status);
-	if (res < 0) {
-		jack_error("status error: %s", snd_strerror(res));
-		return -1;
-	}
-	return snd_pcm_status_get_state(status);
+	return snd_pcm_state(handle);
 }
 
 static int
