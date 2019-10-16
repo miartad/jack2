@@ -1397,52 +1397,8 @@ alsa_driver_stream_start(snd_pcm_t *pcm, bool is_capture)
 #endif
 
 int
-alsa_driver_open (alsa_driver_t *driver)
+alsa_driver_link (alsa_driver_t *driver)
 {
-	int err = 0;
-
-	driver->poll_last = 0;
-	driver->poll_next = 0;
-
-	for (int i = 0; i < driver->devices_count; ++i) {
-		alsa_device_t *device = &driver->devices[i];
-		int do_capture = 0, do_playback = 0;
-
-		if (!device->capture_handle && (i < driver->devices_c_count) && (device->capture_target_state != SND_PCM_STATE_NOTREADY)) {
-			err = alsa_driver_open_device (driver, &driver->devices[i], SND_PCM_STREAM_CAPTURE);
-			if (err < 0) {
-				jack_error ("\n\nATTENTION: Opening of the capture device \"%s\" failed.",
-						driver->devices[i].capture_name);
-				return -1;
-			}
-
-			do_capture = 1;
-		}
-
-		if (!device->playback_handle && (i < driver->devices_p_count) && (device->playback_target_state != SND_PCM_STATE_NOTREADY)) {
-			err = alsa_driver_open_device (driver, &driver->devices[i], SND_PCM_STREAM_PLAYBACK);
-			if (err < 0) {
-				jack_error ("\n\nATTENTION: Opening of the playback device \"%s\" failed.",
-						driver->devices[i].playback_name);
-				return -1;
-			}
-
-			do_playback = 1;
-		}
-
-		if (alsa_driver_set_parameters (driver, device, do_capture, do_playback, driver->frames_per_cycle, driver->user_nperiods, driver->frame_rate)) {
-			jack_error ("ALSA: failed to set parameters");
-			return -1;
-		}
-	}
-
-	if (driver->features & ALSA_DRIVER_FEAT_UNLINKED_DEVS) {
-		jack_info ("alsa driver linking disabled");
-		return 0;
-	} else {
-		jack_info ("alsa driver linking enabled");
-	}
-
 	snd_pcm_t *group_handle = NULL;
 
 	for (int i = 0; i < driver->devices_c_count; ++i) {
@@ -1510,6 +1466,58 @@ alsa_driver_open (alsa_driver_t *driver)
 		}
 		device->playback_linked = 1;
 	}
+
+	return 0;
+}
+
+int
+alsa_driver_open (alsa_driver_t *driver)
+{
+	int err = 0;
+
+	driver->poll_last = 0;
+	driver->poll_next = 0;
+
+	for (int i = 0; i < driver->devices_count; ++i) {
+		alsa_device_t *device = &driver->devices[i];
+		int do_capture = 0, do_playback = 0;
+
+		if (!device->capture_handle && (i < driver->devices_c_count) && (device->capture_target_state != SND_PCM_STATE_NOTREADY)) {
+			err = alsa_driver_open_device (driver, &driver->devices[i], SND_PCM_STREAM_CAPTURE);
+			if (err < 0) {
+				jack_error ("\n\nATTENTION: Opening of the capture device \"%s\" failed.",
+						driver->devices[i].capture_name);
+				return -1;
+			}
+
+			do_capture = 1;
+		}
+
+		if (!device->playback_handle && (i < driver->devices_p_count) && (device->playback_target_state != SND_PCM_STATE_NOTREADY)) {
+			err = alsa_driver_open_device (driver, &driver->devices[i], SND_PCM_STREAM_PLAYBACK);
+			if (err < 0) {
+				jack_error ("\n\nATTENTION: Opening of the playback device \"%s\" failed.",
+						driver->devices[i].playback_name);
+				return -1;
+			}
+
+			do_playback = 1;
+		}
+
+		if (alsa_driver_set_parameters (driver, device, do_capture, do_playback, driver->frames_per_cycle, driver->user_nperiods, driver->frame_rate)) {
+			jack_error ("ALSA: failed to set parameters");
+			return -1;
+		}
+	}
+
+	if (driver->features & ALSA_DRIVER_FEAT_UNLINKED_DEVS) {
+		jack_info ("alsa driver linking disabled");
+		return 0;
+	} else {
+		jack_info ("alsa driver linking enabled");
+	}
+
+	alsa_driver_link(driver);
 
 	return 0;
 }
