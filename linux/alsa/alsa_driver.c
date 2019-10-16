@@ -1539,17 +1539,19 @@ alsa_driver_start (alsa_driver_t *driver)
 			continue;
 		}
 
-		// TODO: amiartus, devices with target state PREPARED should also be prepared, however,
-		// this makes sense only if alsa_driver_stop alsa_driver_close do not close all devices
-		// as done in current implementation, once those functions are updated it makes sense to keep
-		// devices in PREPARED state so they can be started faster on Restart request
-		if (device->capture_target_state != SND_PCM_STATE_RUNNING) {
+		if (device->capture_target_state == SND_PCM_STATE_NOTREADY) {
 			continue;
 		}
 
-		driver->capture_nfds += snd_pcm_poll_descriptors_count (device->capture_handle);
+		if (device->capture_target_state == SND_PCM_STATE_RUNNING) {
+			driver->capture_nfds += snd_pcm_poll_descriptors_count (device->capture_handle);
+		}
 
 		if (group_done && device->capture_linked) {
+			continue;
+		}
+
+		if (alsa_driver_get_state(device->capture_handle, 1) == SND_PCM_STATE_PREPARED) {
 			continue;
 		}
 
@@ -1570,13 +1572,19 @@ alsa_driver_start (alsa_driver_t *driver)
 			continue;
 		}
 
-		if (device->playback_target_state != SND_PCM_STATE_RUNNING) {
+		if (device->playback_target_state == SND_PCM_STATE_NOTREADY) {
 			continue;
 		}
 
-		driver->playback_nfds += snd_pcm_poll_descriptors_count (device->playback_handle);
+		if (device->playback_target_state == SND_PCM_STATE_RUNNING) {
+			driver->playback_nfds += snd_pcm_poll_descriptors_count (device->playback_handle);
+		}
 
 		if (group_done && device->playback_linked) {
+			continue;
+		}
+
+		if (alsa_driver_get_state(device->playback_handle, 0) == SND_PCM_STATE_PREPARED) {
 			continue;
 		}
 
@@ -1772,6 +1780,10 @@ alsa_driver_stop (alsa_driver_t *driver)
 			continue;
 		}
 
+		if (alsa_driver_get_state(device->capture_handle, 1) != SND_PCM_STATE_RUNNING) {
+			continue;
+		}
+
 		if (device->capture_linked) {
 			group_done = 1;
 		}
@@ -1794,6 +1806,10 @@ alsa_driver_stop (alsa_driver_t *driver)
 		}
 
 		if (group_done && device->playback_linked) {
+			continue;
+		}
+
+		if (alsa_driver_get_state(device->playback_handle, 0) != SND_PCM_STATE_RUNNING) {
 			continue;
 		}
 
@@ -1832,9 +1848,17 @@ alsa_driver_close (alsa_driver_t *driver)
 			continue;
 		}
 
+		if (device->capture_target_state == SND_PCM_STATE_RUNNING) {
+			continue;
+		}
+
 		if (device->capture_linked) {
 			snd_pcm_unlink(device->capture_handle);
 			device->capture_linked = 0;
+		}
+
+		if (device->capture_target_state == SND_PCM_STATE_PREPARED) {
+			continue;
 		}
 
 		snd_pcm_close(device->capture_handle);
@@ -1847,9 +1871,17 @@ alsa_driver_close (alsa_driver_t *driver)
 			continue;
 		}
 
+		if (device->playback_target_state == SND_PCM_STATE_RUNNING) {
+			continue;
+		}
+
 		if (device->playback_linked) {
 			snd_pcm_unlink(device->playback_handle);
 			device->playback_linked = 0;
+		}
+
+		if (device->playback_target_state == SND_PCM_STATE_PREPARED) {
+			continue;
 		}
 
 		snd_pcm_close(device->playback_handle);
