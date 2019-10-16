@@ -41,6 +41,7 @@ class JackAlsaDriver : public JackAudioDriver
         enum UpdateState {
             init,
             runtime,
+            shutdown,
         };
 
         jack_driver_t* fDriver;

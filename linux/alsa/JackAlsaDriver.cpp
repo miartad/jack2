@@ -382,6 +382,7 @@ int JackAlsaDriver::Close()
     // Generic audio driver close
     int res = JackAudioDriver::Close();
 
+    UpdateDriverTargetState(UpdateState::shutdown);
     alsa_driver_close((alsa_driver_t *)fDriver);
 
     if (fDriver) {
@@ -545,6 +546,10 @@ int JackAlsaDriver::UpdateDriverTargetState(UpdateState state)
 int JackAlsaDriver::TargetState(UpdateState state, int connections_count)
 {
     alsa_driver_t* driver = (alsa_driver_t*) fDriver;
+
+    if (state == UpdateState::shutdown) {
+        return SND_PCM_STATE_NOTREADY;
+    }
 
     if (connections_count > 0) {
         return SND_PCM_STATE_RUNNING;
