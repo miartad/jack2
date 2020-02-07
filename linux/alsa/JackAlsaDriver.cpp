@@ -472,7 +472,7 @@ int JackAlsaDriver::Reload()
 int JackAlsaDriver::Read()
 {
     /* Taken from alsa_driver_run_cycle */
-    int wait_status;
+    alsa_driver_wait_status_t wait_status;
     jack_nframes_t nframes;
     fDelayedUsecs = 0.f;
 
@@ -480,10 +480,10 @@ retry:
 
     nframes = alsa_driver_wait((alsa_driver_t *)fDriver, -1, &wait_status, &fDelayedUsecs);
 
-    if (wait_status < 0)
+    if (wait_status == ALSA_DRIVER_WAIT_ERROR)
         return -1;		/* driver failed */
 
-    if (nframes == 0) {
+    if (wait_status == ALSA_DRIVER_WAIT_XRUN) {
         /* we detected an xrun and restarted: notify
          * clients about the delay.
          */
