@@ -2062,6 +2062,9 @@ alsa_driver_wait (alsa_driver_t *driver, int extra_fd, alsa_driver_wait_status_t
 
 	int pfd_cap_count[driver->devices_c_count];
 	int pfd_play_count[driver->devices_p_count];
+	/* In case if extra_fd is positive number then should be added to pfd_count
+	 * since at present extra_fd is always negative this is not changed now.
+	 */
 	int pfd_count = driver->capture_nfds + driver->playback_nfds;
 
 	/* special case where all devices are stopped */
@@ -2110,8 +2113,18 @@ alsa_driver_wait (alsa_driver_t *driver, int extra_fd, alsa_driver_wait_status_t
 				&driver->pfd[pfd_index],
 				pfd_count - pfd_index,
 				SND_PCM_STREAM_CAPTURE);
-
-			pfd_index += pfd_cap_count[i];
+			if (pfd_cap_count[i] < 0) {
+				jack_log ("alsa_driver_poll_descriptors failed pfd_cap_count[%d]=%d", i ,pfd_cap_count[i] );
+				/* In case of xrun -EPIPE is returned perform xrun recovery*/
+				if (pfd_cap_count[i] == -EPIPE) {
+					goto xrun;
+				}
+				/* for any other error return negative wait status to caller */
+				*status = ALSA_DRIVER_WAIT_ERROR;
+				return 0;
+			} else {
+				pfd_index += pfd_cap_count[i];
+			}
 		}
 
 		/* collect playback poll descriptors */
@@ -2134,8 +2147,18 @@ alsa_driver_wait (alsa_driver_t *driver, int extra_fd, alsa_driver_wait_status_t
 				&driver->pfd[pfd_index],
 				pfd_count - pfd_index,
 				SND_PCM_STREAM_PLAYBACK);
-
-			pfd_index += pfd_play_count[i];
+			if (pfd_play_count[i] < 0) {
+				jack_log ("alsa_driver_poll_descriptors failed pfd_play_count[%d]=%d", i ,pfd_play_count[i] );
+				/* In case of xrun -EPIPE is returned perform xrun recovery*/
+				if (pfd_cap_count[i] == -EPIPE) {
+					goto xrun;
+				}
+				/* for any other error return negative wait status to caller */
+				*status = ALSA_DRIVER_WAIT_ERROR;
+				return 0;
+			} else {
+				pfd_index += pfd_play_count[i];
+			}
 		}
 
 		if (extra_fd >= 0) {
@@ -2143,12 +2166,6 @@ alsa_driver_wait (alsa_driver_t *driver, int extra_fd, alsa_driver_wait_status_t
 			driver->pfd[pfd_index].events =
 				POLLIN|POLLERR|POLLHUP|POLLNVAL;
 			pfd_index++;
-		}
-
-		/* nothing to poll on */
-		if (pfd_index == 0 && extra_fd < 0) {
-			*status = ALSA_DRIVER_WAIT_ERROR;
-			return 0;
 		}
 
 		poll_enter = jack_get_microseconds ();
