@@ -2317,11 +2317,6 @@ alsa_driver_wait (alsa_driver_t *driver, int extra_fd, int *status, float
 				pfd_count -= pfd_play_count[i];
 			}
 		}
-
-		/* all fds were polled and returned events, nothing more to do */
-		if (pfd_count == 0) {
-			break;
-		}
 	}
 
 	/* TODO: amiartus; I assume all devices are snd_pcm_link-ed and running on the same clock source,
