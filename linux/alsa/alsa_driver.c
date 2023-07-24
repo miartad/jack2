@@ -767,10 +767,6 @@ alsa_driver_set_parameters (alsa_driver_t *driver,
 			jack_error ("ALSA: pcm playback handle not available");
 			return -1;
 		}
-		if (err) {
-			jack_error ("ALSA: cannot configure playback channel");
-			return -1;
-		}
 
 		err = alsa_driver_configure_stream (
 			driver,
@@ -1058,18 +1054,6 @@ alsa_driver_get_channel_addresses (alsa_driver_t *driver,
 				+ ((a->first + a->step * *capture_offset) / 8);
 			device->capture_interleave_skip[chn] = (unsigned long ) (a->step / 8);
 		}
-		for (chn = 0; chn < device->capture_nchannels; chn++) {
-			char* const a = device->capture_areas;
-			if (device->capture_interleaved) {
-				device->capture_addr[chn] = &a[chn * device->capture_sample_bytes];
-				device->capture_interleave_skip[chn] = device->capture_nchannels *
-				        device->capture_sample_bytes;
-			} else {
-				device->capture_addr[chn] = &a[chn *
-				        device->capture_sample_bytes * driver->frames_per_cycle];
-				device->capture_interleave_skip[chn] = device->capture_sample_bytes;
-			}
-		}
 	}
 
 	if (playback_avail) {
@@ -1088,18 +1072,6 @@ alsa_driver_get_channel_addresses (alsa_driver_t *driver,
 			device->playback_addr[chn] = (char *) a->addr
 				+ ((a->first + a->step * *playback_offset) / 8);
 			device->playback_interleave_skip[chn] = (unsigned long ) (a->step / 8);
-		}
-		for (chn = 0; chn < device->playback_nchannels; chn++) {
-			char* const a = device->playback_areas;
-			if (device->playback_interleaved) {
-				device->playback_addr[chn] = &a[chn * device->playback_sample_bytes];
-				device->playback_interleave_skip[chn] = device->playback_nchannels *
-				        device->playback_sample_bytes;
-			} else {
-				device->playback_addr[chn] = &a[chn *
-				        device->playback_sample_bytes * driver->frames_per_cycle];
-				device->playback_interleave_skip[chn] = device->playback_sample_bytes;
-			}
 		}
 	}
 
@@ -2543,6 +2515,7 @@ alsa_driver_open_device (alsa_driver_t *driver, alsa_device_t *device, bool is_c
 		}
 	}
 
+	if (is_capture && device->capture_handle) {
 		snd_pcm_nonblock (device->capture_handle, 0);
 	} else if(!is_capture && device->playback_handle) {
 		snd_pcm_nonblock (device->playback_handle, 0);
