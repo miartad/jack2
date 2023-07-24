@@ -38,6 +38,11 @@ class JackAlsaDriver : public JackAudioDriver
 
     private:
 
+        enum UpdateState {
+            init,
+            runtime,
+        };
+
         jack_driver_t* fDriver;
 
         void UpdateLatencies();
@@ -77,9 +82,9 @@ class JackAlsaDriver : public JackAudioDriver
         void WriteOutputAux(alsa_device_t *device, jack_nframes_t orig_nframes, snd_pcm_sframes_t contiguous, snd_pcm_sframes_t nwritten);
         void SetTimetAux(jack_time_t time);
 
-        int UpdateDriverTargetState(int init = 0);
+        int UpdateDriverTargetState(UpdateState state);
 
-        int TargetState(int init, int connections_count);
+        int TargetState(UpdateState state, int connections_count);
 
         // JACK API emulation for the midi driver
         int is_realtime() const;
